@@ -1,10 +1,10 @@
-%define gcj_support         0
+%define gcj_support         1
 %define eclipse_base        %{_datadir}/eclipse
 
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.0.0
-Release: %mkrel 0.5.3
+Release: %mkrel 0.5.4
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
