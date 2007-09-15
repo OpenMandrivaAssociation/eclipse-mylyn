@@ -4,7 +4,7 @@
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.0.0
-Release: %mkrel 0.5.2
+Release: %mkrel 0.5.3
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
@@ -30,8 +30,6 @@ BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 %if %{gcj_support}
 BuildRequires:    gcc-java
 BuildRequires:    java-gcj-compat-devel
-Requires(post):   java-gcj-compat
-Requires(postun): java-gcj-compat
 %else
 BuildRequires:    java-devel >= 1.5.0
 %endif
