@@ -4,7 +4,7 @@
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.0.0
-Release: %mkrel 0.5.1
+Release: %mkrel 0.5.2
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
@@ -324,7 +324,7 @@ ln -s %{_javadir}/xmlrpc3-common-3.0.jar xmlrpc-common-3.0.jar
 ln -s %{_javadir}/ws-commons-util-1.0.1.jar
 popd
 pushd $RPM_BUILD_ROOT%{eclipse_base}/plugins/org.eclipse.mylyn.web.core_*/lib-rome
-rm *.jar
+rm -f *.jar
 ln -s %{_javadir}/jdom-1.0.jar
 popd
 
