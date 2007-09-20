@@ -4,7 +4,7 @@
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.0.0
-Release: %mkrel 0.5.5
+Release: %mkrel 0.7.1
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
@@ -158,9 +158,10 @@ rm *.jar
 ln -s %{_javadir}/jdom-1.0.jar
 popd
 
-#sed --in-place "s/<import.*mylar.*\/>//" org.eclipse.mylyn-feature/feature.xml
 # remove references to mylar in feature
 sed --in-place -e "304,456d" org.eclipse.mylyn-feature/feature.xml 
+sed --in-place "s/<import.*mylar.*\/>//" org.eclipse.mylyn-feature/feature.xml
+%{__grep} mylar org.eclipse.mylyn-feature/feature.xml && exit 1
 
 %build
 SDK=$(cd SDK > /dev/null && pwd)
@@ -432,7 +433,7 @@ fi
 %{eclipse_base}/plugins/org.eclipse.mylyn.resources.ui_*.jar
 %if %{gcj_support}
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.help.ui_*
-#%{_libdir}/gcj/%{name}/org.eclipse.mylyn.web.core_*
+%{_libdir}/gcj/%{name}/mylyn-webcore*
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.context.core_*
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.tasks.ui_*
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.tasks.core_*
