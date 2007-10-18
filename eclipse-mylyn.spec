@@ -4,7 +4,7 @@
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.0.0
-Release: %mkrel 0.7.1
+Release: %mkrel 0.9.1
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
@@ -17,6 +17,7 @@ ExcludeArch: ppc64
 # tar cjf org.eclipse.mylyn-R_2_0_0-fetched-src.tar.bz2 org.eclipse.mylyn
 Source0: org.eclipse.mylyn-R_2_0_0-fetched-src.tar.bz2
 Source1: fetch-mylar.sh
+Source2: http://overholt.fedorapeople.org/fedoraeclipse-mylynbugzilla-0.0.1.zip
 
 # SSLSocketFactory#createSocket() is not implemented in GNU Classpath
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31626
@@ -24,6 +25,7 @@ Patch3: eclipse-mylar-createSocketworkaround.patch
 # So we can symlink to dependencies
 Patch4: %{name}-unpackwebcore.patch
 Patch5: %{name}-webcorejar.patch
+Patch6: %{name}-addfedoracustomizations.patch
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -120,6 +122,7 @@ Mylyn Task-Focused UI extensions for PDE, Ant, Team Support and CVS.
 
 %prep
 %setup -q -n org.eclipse.mylyn
+unzip -q %{SOURCE2}
 
 # GCJ issue
 sed --in-place "s/@Override//" \
@@ -156,6 +159,10 @@ popd
 pushd org.eclipse.mylyn.web.core/lib-rome
 rm *.jar
 ln -s %{_javadir}/jdom-1.0.jar
+popd
+
+pushd org.eclipse.mylyn.bugzilla-feature
+%patch6
 popd
 
 # remove references to mylar in feature
@@ -352,6 +359,7 @@ fi
 %defattr(-,root,root,-)
 %{eclipse_base}/plugins/org.eclipse.mylyn.bugzilla.core_*.jar
 %{eclipse_base}/plugins/org.eclipse.mylyn.bugzilla.ui_*.jar
+%{eclipse_base}/plugins/org.fedoraproject.mylyn.bugzilla_*.jar
 %dir %{eclipse_base}/features/org.eclipse.mylyn.bugzilla_feature_*
 %doc %{eclipse_base}/features/org.eclipse.mylyn.bugzilla_feature_*/license.html
 %doc %{eclipse_base}/features/org.eclipse.mylyn.bugzilla_feature_*/about.html
@@ -359,6 +367,7 @@ fi
 %{eclipse_base}/features/org.eclipse.mylyn.bugzilla_feature_*/feature.xml
 %if %{gcj_support}
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.bugzilla*
+%{_libdir}/gcj/%{name}/org.fedoraproject.mylyn.bugzilla*
 %endif
 
 %files ide
