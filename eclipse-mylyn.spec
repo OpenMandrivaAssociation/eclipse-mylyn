@@ -27,7 +27,6 @@ Patch4: %{name}-unpackwebcore.patch
 Patch5: %{name}-webcorejar.patch
 Patch6: %{name}-addfedoracustomizations.patch
 
-BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %if %{gcj_support}
 BuildRequires:    gcc-java
