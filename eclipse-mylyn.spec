@@ -7,6 +7,7 @@ Version: 2.0.0
 Release: %mkrel 0.9.2
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
+BuildRequires:  java-rpmbuild >= 0:1.5, make, gcc
 
 # no xmlrpc3 on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
