@@ -2,7 +2,7 @@
 %define eclipse_base        %{_datadir}/eclipse
 
 Name: eclipse-mylyn 
-Summary: Mylyn is a task-focused UI for Eclipse
+Summary: Task-focused UI for Eclipse
 Version: 2.0.0
 Release: %mkrel 0.9.1
 License: Eclipse Public License
