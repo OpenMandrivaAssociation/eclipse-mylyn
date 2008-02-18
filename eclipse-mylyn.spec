@@ -4,7 +4,7 @@
 Name: eclipse-mylyn 
 Summary: Task-focused UI for Eclipse
 Version: 2.0.0
-Release: %mkrel 0.9.1
+Release: %mkrel 0.9.2
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
@@ -39,7 +39,7 @@ BuildRequires:    java-devel >= 1.5.0
 %if ! %{gcj_support}
 BuildArch: noarch
 %endif
-
+BuildRequires: java-rpmbuild
 BuildRequires: eclipse-pde >= 1:3.2.1
 BuildRequires: eclipse-cvs-client >= 1:3.2.1
 BuildRequires: jakarta-commons-codec >= 0:1.3-8
