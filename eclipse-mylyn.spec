@@ -2,12 +2,11 @@
 %define eclipse_base        %{_datadir}/eclipse
 
 Name: eclipse-mylyn 
-Summary: Task-focused UI for Eclipse
-Version: 2.0.0
-Release: %mkrel 0.9.2
+Summary: Mylyn is a task-focused UI for Eclipse
+Version: 2.3.2
+Release: %mkrel 0.4.1
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
-BuildRequires:  java-rpmbuild >= 0:1.5, make, gcc
 
 # no xmlrpc3 on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
@@ -15,14 +14,11 @@ ExcludeArch: ppc64
 
 # mkdir temp && cd temp
 # sh fetch-mylyn.sh
-# tar cjf org.eclipse.mylyn-R_2_0_0-fetched-src.tar.bz2 org.eclipse.mylyn
-Source0: org.eclipse.mylyn-R_2_0_0-fetched-src.tar.bz2
-Source1: fetch-mylar.sh
-Source2: http://overholt.fedorapeople.org/fedoraeclipse-mylynbugzilla-0.0.1.zip
+# tar cjf org.eclipse.mylyn-R_2_3_2_e_3_3-fetched-src.tar.bz2 org.eclipse.mylyn
+Source0: org.eclipse.mylyn-R_2_3_2_e_3_3-fetched-src.tar.bz2
+Source1: fetch-mylyn.sh
+Source2: http://overholt.fedorapeople.org/fedoraeclipse-mylynbugzilla-0.0.2.zip
 
-# SSLSocketFactory#createSocket() is not implemented in GNU Classpath
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31626
-Patch3: eclipse-mylar-createSocketworkaround.patch
 # So we can symlink to dependencies
 Patch4: %{name}-unpackwebcore.patch
 Patch5: %{name}-webcorejar.patch
@@ -41,24 +37,26 @@ BuildRequires:    java-devel >= 1.5.0
 BuildArch: noarch
 %endif
 BuildRequires: java-rpmbuild
-BuildRequires: eclipse-pde >= 1:3.2.1
-BuildRequires: eclipse-cvs-client >= 1:3.2.1
-BuildRequires: jakarta-commons-codec >= 0:1.3-8
-BuildRequires: jakarta-commons-httpclient >= 1:3.0.1-1.2
+BuildRequires: eclipse-pde >= 1:3.3.2
+BuildRequires: eclipse-cvs-client >= 1:3.3.2
+BuildRequires: jakarta-commons-codec >= 1.3-8jpp.2
+BuildRequires: jakarta-commons-httpclient >= 1:3.1
 BuildRequires: jakarta-commons-logging
-BuildRequires: ws-commons-util >= 0:1.0.1-5
-BuildRequires: xmlrpc3-client >= 0:3.0-1.3
-BuildRequires: xmlrpc3-common >= 0:3.0-1.3
-Requires: eclipse-platform >= 1:3.2.1
-Requires: eclipse-cvs-client >= 1:3.2.1
-Requires: jakarta-commons-codec >= 0:1.3-8.2
-Requires: jakarta-commons-httpclient >= 1:3.0.1-1.2
+BuildRequires: jakarta-commons-lang >= 2.1
+BuildRequires: ws-commons-util >= 1.0.1-5
+BuildRequires: xmlrpc3-client >= 3.0-1jpp.3
+BuildRequires: xmlrpc3-common >= 3.0-1jpp.3
+Requires: eclipse-platform >= 1:3.3.0
+Requires: eclipse-cvs-client >= 1:3.3.0
+Requires: jakarta-commons-codec >= 1.3-8jpp.2
+Requires: jakarta-commons-httpclient >= 1:3.1
 Requires: jakarta-commons-logging
-Requires: ws-commons-util >= 0:1.0.1-2
-Requires: xmlrpc3-client >= 0:3.0-1.3
-Requires: xmlrpc3-common >= 0:3.0-1.3
-Provides: eclipse-mylar = 0:2.0.0-1
-Obsoletes: eclipse-mylar < 0:2.0.0
+Requires: jakarta-commons-lang >= 2.1
+Requires: ws-commons-util >= 1.0.1-2
+Requires: xmlrpc3-client >= 3.0-1jpp.3
+Requires: xmlrpc3-common >= 3.0-1jpp.3
+Provides: eclipse-mylar = 2.0.0-1.fc7
+Obsoletes: eclipse-mylar < 2.0.0
 
 Group: Development/Java
 
@@ -125,28 +123,26 @@ Mylyn Task-Focused UI extensions for PDE, Ant, Team Support and CVS.
 %setup -q -n org.eclipse.mylyn
 unzip -q %{SOURCE2}
 
-# GCJ issue
+# FIXME:  file these upstream
 sed --in-place "s/@Override//" \
    org.eclipse.mylyn.context.ui/src/org/eclipse/mylyn/internal/context/ui/commands/FocusViewHandler.java \
    org.eclipse.mylyn.tasks.ui/src/org/eclipse/mylyn/internal/tasks/ui/commands/AddTaskRepositoryHandler.java
 
-# GCJ issue
+# So we can symlink to jars from another package
 pushd org.eclipse.mylyn.web.core
-%patch3 -p0
 %patch5
 popd
 
 # So we can symlink to dependencies
+pushd org.eclipse.mylyn-feature
 %patch4
-
-/bin/sh -x %{eclipse_base}/buildscripts/copy-platform SDK %{eclipse_base}
-mkdir home
+popd
 
 # symlink out to jars we built
 pushd org.eclipse.mylyn.web.core/lib-httpclient
 rm commons-*.jar
 ln -s %{_javadir}/commons-codec-1.3.jar
-ln -s %{_javadir}/commons-httpclient.jar commons-httpclient-3.0.1.jar
+ln -s %{_javadir}/commons-httpclient.jar commons-httpclient-3.1.jar
 ln -s %{_javadir}/commons-logging-api.jar commons-logging-api-1.0.4.jar
 ln -s %{_javadir}/commons-logging.jar commons-logging-1.0.4.jar
 popd
@@ -161,141 +157,37 @@ pushd org.eclipse.mylyn.web.core/lib-rome
 rm *.jar
 ln -s %{_javadir}/jdom-1.0.jar
 popd
+pushd org.eclipse.mylyn.web.core/lib-lang
+rm *.jar
+ln -s %{_javadir}/commons-lang.jar commons-lang-2.1.jar
+popd
 
 pushd org.eclipse.mylyn.bugzilla-feature
 %patch6
 popd
 
-# remove references to mylar in feature
-sed --in-place -e "304,456d" org.eclipse.mylyn-feature/feature.xml 
-sed --in-place "s/<import.*mylar.*\/>//" org.eclipse.mylyn-feature/feature.xml
-%{__grep} mylar org.eclipse.mylyn-feature/feature.xml && exit 1
-
 %build
-SDK=$(cd SDK > /dev/null && pwd)
-
-# Eclipse may try to write to the home directory.
-homedir=$(cd home > /dev/null && pwd)
-
-# build the main mylyn feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn_feature                    \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
-# build the mylyn bugzilla feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn.bugzilla_feature           \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
-# build the mylyn context feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn.context_feature            \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
-# build the mylyn ide feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn.ide_feature                \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
-# build the mylyn trac feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn.trac_feature               \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
-# build the mylyn java feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn.java_feature               \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
-# build the mylyn pde feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -DjavacSource=1.5                                 \
-     -DjavacTarget=1.5                                 \
-     -Dtype=feature                                    \
-     -Did=org.eclipse.mylyn.pde_feature               \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{eclipse_base}/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{eclipse_base}/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir                      \
-     -DJ2SE-1.5=%{_jvmdir}/java/jre/lib/rt.jar
-
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.bugzilla_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.context_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.ide_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.trac_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.java_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.pde_feature \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 
 %install
 rm -rf %{buildroot}
@@ -319,7 +211,7 @@ unzip -q -d $RPM_BUILD_ROOT%{eclipse_base}/.. \
 pushd $RPM_BUILD_ROOT%{eclipse_base}/plugins/org.eclipse.mylyn.web.core_*/lib-httpclient
 rm commons-*.jar
 ln -s %{_javadir}/commons-codec-1.3.jar
-ln -s %{_javadir}/commons-httpclient.jar commons-httpclient-3.0.1.jar
+ln -s %{_javadir}/commons-httpclient.jar commons-httpclient-3.1.jar
 ln -s %{_javadir}/commons-logging-api.jar commons-logging-api-1.0.4.jar
 ln -s %{_javadir}/commons-logging.jar commons-logging-1.0.4.jar
 popd
@@ -334,26 +226,46 @@ pushd $RPM_BUILD_ROOT%{eclipse_base}/plugins/org.eclipse.mylyn.web.core_*/lib-ro
 rm -f *.jar
 ln -s %{_javadir}/jdom-1.0.jar
 popd
+pushd $RPM_BUILD_ROOT%{eclipse_base}/plugins/org.eclipse.mylyn.web.core_*/lib-lang
+rm *.jar
+ln -s %{_javadir}/commons-lang.jar commons-lang-2.1.jar
+popd
 
-%if %{gcj_support}
-%{_bindir}/aot-compile-rpm
-%endif
+%{gcj_compile}
 
 %clean
 rm -rf %{buildroot}
 
 %if %{gcj_support}
 %post
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
+%{update_gcjdb}
 
 %postun
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
+%{clean_gcjdb}
+
+%post bugzilla
+%{update_gcjdb}
+
+%postun bugzilla
+%{clean_gcjdb}
+
+%post ide
+%{update_gcjdb}
+
+%postun ide
+%{clean_gcjdb}
+
+%post trac
+%{update_gcjdb}
+
+%postun trac
+%{clean_gcjdb}
+
+%post java
+%{update_gcjdb}
+
+%postun java
+%{clean_gcjdb}
 %endif
 
 %files bugzilla
@@ -426,6 +338,7 @@ fi
 %defattr(-,root,root,-)
 %{eclipse_base}/plugins/org.eclipse.mylyn.help.ui_*.jar
 %{eclipse_base}/plugins/org.eclipse.mylyn.web.core_*
+%{eclipse_base}/plugins/org.eclipse.mylyn.compatibility_*.jar
 %{eclipse_base}/plugins/org.eclipse.mylyn.context.core_*.jar
 %{eclipse_base}/plugins/org.eclipse.mylyn.tasks.ui_*.jar
 %{eclipse_base}/plugins/org.eclipse.mylyn.tasks.core_*.jar
@@ -444,6 +357,7 @@ fi
 %if %{gcj_support}
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.help.ui_*
 %{_libdir}/gcj/%{name}/mylyn-webcore*
+%{_libdir}/gcj/%{name}/org.eclipse.mylyn.compatibility_*
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.context.core_*
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.tasks.ui_*
 %{_libdir}/gcj/%{name}/org.eclipse.mylyn.tasks.core_*
