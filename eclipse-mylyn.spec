@@ -1,10 +1,13 @@
 %define gcj_support         1
 %define eclipse_base        %{_datadir}/eclipse
+# Taken from update site so we match upstream
+# http://download.eclipse.org/tools/mylyn/update/e3.3/
+%define qualifier           v20080402-2100
 
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.3.2
-Release: %mkrel 0.4.1
+Release: %mkrel 0.6.1
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
@@ -168,25 +171,25 @@ popd
 
 %build
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.bugzilla_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.context_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.ide_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.trac_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.java_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 %{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.pde_feature \
- -a "-DjavacSource=1.5 -DjavacTarget=1.5" \
+ -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar
 
 %install
