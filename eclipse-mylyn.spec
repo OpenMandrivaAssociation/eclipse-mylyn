@@ -7,7 +7,7 @@
 Name: eclipse-mylyn 
 Summary: Mylyn is a task-focused UI for Eclipse
 Version: 2.3.2
-Release: %mkrel 0.6.1
+Release: %mkrel 2.6.1
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
