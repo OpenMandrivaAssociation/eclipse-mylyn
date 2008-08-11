@@ -110,7 +110,7 @@ Summary:  Mylyn Focused UI
 Requires: %{name} = %{version}-%{release}
 Requires: rome
 Requires: jdom
-Group: Development/Tools
+Group: Development/Java
 
 %description webtasks
 Provides Task List integration for several web-based issue trackers
