@@ -48,6 +48,7 @@ BuildRequires: xmlrpc3-common >= 3.0-1jpp.3
 BuildRequires: rome
 BuildRequires: jdom
 BuildRequires: zip
+BuildRequires: tomcat5-jsp-2.0-api
 Requires: eclipse-platform >= 1:3.4.0
 Requires: eclipse-cvs-client >= 1:3.4.0
 Requires: jakarta-commons-codec >= 1.3-8jpp.2
