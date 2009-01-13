@@ -1,20 +1,21 @@
-%define eclipse_base        %{_libdir}/eclipse
+%define eclipse_base     %{_libdir}/eclipse
 %define install_loc         %{_datadir}/eclipse/dropins
+
 # Taken from update site so we match upstream
 # http://download.eclipse.org/tools/mylyn/update/e3.4/
-%define qualifier           v20080716-2300-e3x
+%define qualifier           v20081015-1500-e3x
 
-Name: eclipse-mylyn 
+Name: eclipse-mylyn
 Summary: Mylyn is a task-focused UI for Eclipse
-Version: 3.0.1
-Release: %mkrel 0.1.1
+Version: 3.0.3
+Release: %mkrel 0.4.0
 License: Eclipse Public License
 URL: http://www.eclipse.org/mylyn
 
 # mkdir temp && cd temp
 # sh fetch-mylyn.sh
 # tar cjf org.eclipse.mylyn-R_3_0_1-fetched-src.tar.bz2 org.eclipse.mylyn
-Source0: org.eclipse.mylyn-R_3_0_1-fetched-src.tar.bz2
+Source0: org.eclipse.mylyn-R_3_0_3-fetched-src.tar.bz2
 Source1: fetch-mylyn.sh
 Source2: http://overholt.fedorapeople.org/fedoraeclipse-mylynbugzilla-0.0.2.zip
 
@@ -27,11 +28,16 @@ Patch7: %{name}-nojaxb.patch
 Patch8: %{name}-splitxmlrpc.patch
 # Red Hat Bugzilla is 3.0 now
 Patch9: %{name}-rhbz30.patch
+# Back-port patch for Bugzilla servers with large config files
+# Bug:  https://bugs.eclipse.org/bugs/show_bug.cgi?id=239435
+# Patch:  https://bugs.eclipse.org/bugs/attachment.cgi?id=109607
+# Tests part of patch taken out to avoid having to split it up by project
+# for application in %%prep.
+Patch10: %{name}-largebzconfigs.patch
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildRequires:    java-devel >= 1.5.0
-
 
 BuildArch: noarch
 
@@ -42,13 +48,14 @@ BuildRequires: jakarta-commons-codec >= 1.3-8jpp.2
 BuildRequires: jakarta-commons-httpclient >= 1:3.1
 BuildRequires: jakarta-commons-logging
 BuildRequires: jakarta-commons-lang >= 2.1
-BuildRequires: ws-commons-util >= 1.0.1-5
+BuildRequires: ws-commons-util >= 1.0.1
 BuildRequires: xmlrpc3-client >= 3.0-1jpp.3
 BuildRequires: xmlrpc3-common >= 3.0-1jpp.3
 BuildRequires: rome
 BuildRequires: jdom
 BuildRequires: zip
 BuildRequires: tomcat5-jsp-2.0-api
+BuildRequires: ws-jaxme >= 0.5.1-2.4
 Requires: eclipse-platform >= 1:3.4.0
 Requires: eclipse-cvs-client >= 1:3.4.0
 Requires: jakarta-commons-codec >= 1.3-8jpp.2
@@ -127,16 +134,28 @@ rm -rf *tests*
 
 mkdir orbitDeps
 pushd orbitDeps
+rm -f org.apache.commons.codec_1.3.0.jar
 ln -s %{_javadir}/commons-codec-1.3.jar org.apache.commons.codec_1.3.0.jar
+rm -f org.apache.commons.httpclient_3.1.0.jar
 ln -s %{_javadir}/commons-httpclient.jar org.apache.commons.httpclient_3.1.0.jar
+rm -f org.apache.commons.lang_2.3.0.jar
 ln -s %{_javadir}/commons-lang.jar org.apache.commons.lang_2.3.0.jar
+rm -f org.apache.commons.logging.api_1.0.4.jar
 ln -s %{_javadir}/commons-logging-api.jar org.apache.commons.logging.api_1.0.4.jar
+rm -f org.apache.commons.logging_1.0.4.jar
 ln -s %{_javadir}/commons-logging.jar org.apache.commons.logging_1.0.4.jar
-ln -s %{_javadir}/xmlrpc3-client-3.0.jar org.apache.xmlrpc.client_3.0.0.v20080530-1550.jar
-ln -s %{_javadir}/xmlrpc3-common-3.0.jar org.apache.xmlrpc.common_3.0.0.v20080530-1550.jar
-ln -s %{_javadir}/ws-commons-util-1.0.1.jar org.apache.ws.commons.util_1.0.0.v20080530-1550.jar
+rm -f org.apache.xmlrpc.client_3.0.0.v20080530-1.50.jar
+ln -s %{_javadir}/xmlrpc3-client.jar org.apache.xmlrpc.client_3.0.0.v20080530-1.50.jar
+rm -f org.apache.xmlrpc.common_3.0.0.v20080530-1.50.jar
+ln -s %{_javadir}/xmlrpc3-common.jar org.apache.xmlrpc.common_3.0.0.v20080530-1.50.jar
+rm -f org.apache.ws.commons.util_1.0.0.v20080530-1.50.jar
+ln -s %{_javadir}/ws-commons-util-1.0.1.jar org.apache.ws.commons.util_1.0.0.v20080530-1.50.jar
+rm -f org.jdom_1.0.0.v200806100616.jar
 ln -s %{_javadir}/jdom-1.0.jar org.jdom_1.0.0.v200806100616.jar
+rm -f com.sun.syndication_0.9.0.v200803061811.jar
 ln -s %{_javadir}/rome-0.9.jar com.sun.syndication_0.9.0.v200803061811.jar
+rm -f javax.xml.bind.jar
+ln -s %{_javadir}/jaxme/jaxmeapi.jar javax.xml.bind.jar
 popd
 
 #javax.activation_1.1.0.v200806101325.jar
@@ -150,12 +169,15 @@ popd
 #org.apache.axis_1.4.0.v200806030120.zip,unpack=true
 #org.apache.commons.discovery_0.2.0.v200806030120.zip,unpack=true
 
-%patch6 -p0
+%patch6 -p0 -b .withfedoracustomizations
 pushd org.fedoraproject.mylyn.bugzilla
 %patch9
 popd
-%patch7
+#%patch7
 %patch8
+pushd org.eclipse.mylyn.bugzilla.core
+%patch10
+popd
 
 find -name feature.xml |
   while read f; do
@@ -183,19 +205,19 @@ find -name feature.xml |
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.trac_feature \
+%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.trac_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.java_feature \
+%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.java_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.pde_feature \
+%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.pde_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.web.tasks_feature \
+%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.web.tasks_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
@@ -241,11 +263,22 @@ ln -s %{_javadir}/commons-logging.jar org.apache.commons.logging_1.0.4.jar
 popd
 
 pushd $RPM_BUILD_ROOT%{install_loc}/mylyn-trac/eclipse/plugins
-rm org.apache.ws.commons.util_1.0.0.v20080716-2300-e3x.jar
-rm org.apache.xmlrpc_3.0.0.v20080716-2300-e3x.jar
-ln -s %{_javadir}/xmlrpc3-client-3.0.jar org.apache.xmlrpc.client_3.0.0.v20080530-1550.jar
-ln -s %{_javadir}/xmlrpc3-common-3.0.jar org.apache.xmlrpc.common_3.0.0.v20080530-1550.jar
-ln -s %{_javadir}/ws-commons-util-1.0.1.jar org.apache.ws.commons.util_1.0.0.v20080530-1550.jar
+rm org.apache.ws.commons.util_1.0.0.%{qualifier}.jar
+rm org.apache.xmlrpc_3.0.0.%{qualifier}.jar
+ln -s %{_javadir}/xmlrpc3-client.jar org.apache.xmlrpc.client_3.0.0.v20080530-1.50.jar
+ln -s %{_javadir}/xmlrpc3-common.jar org.apache.xmlrpc.common_3.0.0.v20080530-1.50.jar
+ln -s %{_javadir}/ws-commons-util-1.0.1.jar org.apache.ws.commons.util_1.0.0.v20080530-1.50.jar
+ln -s %{_javadir}/jaxme/jaxmeapi.jar javax.xml.bind.jar
+popd
+
+#Do not use qualifier value for dependencies to not be forced to rebuild them for
+# every mylyn
+pushd $RPM_BUILD_ROOT%{install_loc}/mylyn-trac/eclipse/features
+       find -name feature.xml |
+       while read f; do
+      sed -i "s/3.0.0.%{qualifier}/3.0.0.qualifier/g" $f
+      sed -i "s/1.0.0.%{qualifier}/1.0.0.qualifier/g" $f
+       done
 popd
 
 pushd $RPM_BUILD_ROOT%{install_loc}/mylyn-webtasks/eclipse/plugins
