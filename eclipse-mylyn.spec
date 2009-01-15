@@ -205,19 +205,19 @@ find -name feature.xml |
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.trac_feature \
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.trac_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.java_feature \
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.java_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.pde_feature \
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.pde_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
-%{eclipse_base}/buildscripts/pdebuild -D -f org.eclipse.mylyn.web.tasks_feature \
+%{eclipse_base}/buildscripts/pdebuild -f org.eclipse.mylyn.web.tasks_feature \
  -a "-DjavacSource=1.5 -DjavacTarget=1.5 -DforceContextQualifier=%{qualifier} -DmylynQualifier=%{qualifier}" \
  -j -DJ2SE-1.5=%{_jvmdir}/java-rpmbuild/jre/lib/rt.jar \
  -o `pwd`/orbitDeps
