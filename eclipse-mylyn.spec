@@ -7,7 +7,7 @@
 Name: eclipse-mylyn
 Summary: Eclipse Mylyn main feature
 Version: 3.5.1
-Release: 1
+Release: 3
 License: EPL
 URL: http://www.eclipse.org/mylyn
 
