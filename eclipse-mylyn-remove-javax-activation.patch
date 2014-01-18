@@ -1,0 +1,16 @@
+--- org.eclipse.mylyn.commons/org.eclipse.mylyn.commons.soap-feature/feature.xml.bak	2013-05-02 15:52:52.000000000 +0200
++++ org.eclipse.mylyn.commons/org.eclipse.mylyn.commons.soap-feature/feature.xml	2013-05-02 16:37:08.799851336 +0200
+@@ -59,13 +55,6 @@
+          version="0.0.0"/>
+ 
+    <plugin
+-         id="javax.activation"
+-         download-size="0"
+-         install-size="0"
+-         version="0.0.0"
+-         unpack="false"/>
+-
+-   <plugin
+          id="javax.mail"
+          download-size="0"
+          install-size="0"

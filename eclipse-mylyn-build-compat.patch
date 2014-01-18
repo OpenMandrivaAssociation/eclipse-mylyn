@@ -1,0 +1,10 @@
+--- org.eclipse.mylyn.commons/pom.xml.orig	2013-11-13 09:33:33.510443166 +0200
++++ org.eclipse.mylyn.commons/pom.xml	2013-11-13 09:34:32.841463275 +0200
+@@ -72,6 +72,7 @@
+     </profile>
+   </profiles>
+   <modules>
++    <module>org.eclipse.core.runtime.compatibility.auth</module>
+     <module>org.eclipse.mylyn.commons-feature</module>
+     <module>org.eclipse.mylyn.commons-site</module>
+     <module>org.eclipse.mylyn.commons-target</module>

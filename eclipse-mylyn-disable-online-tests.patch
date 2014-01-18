@@ -1,0 +1,59 @@
+--- org.eclipse.mylyn.docs/org.eclipse.mylyn.docs.epub.tests/pom.xml.bak	2012-07-02 09:22:28.000000000 +0200
++++ org.eclipse.mylyn.docs/org.eclipse.mylyn.docs.epub.tests/pom.xml	2012-07-05 12:59:13.696588682 +0200
+@@ -30,25 +30,6 @@
+ 	<build>
+ 		<plugins>		
+ 			<plugin>
+-				<groupId>org.apache.maven.plugins</groupId>
+-				<artifactId>maven-antrun-plugin</artifactId>
+-				<version>1.6</version>
+-				<executions>
+-					<execution>
+-					  <id>epubcheck</id>
+-						<phase>generate-sources</phase>
+-						<configuration>
+-							<tasks>
+-                <ant antfile="epubcheck.xml" inheritAll="true"/>
+-							</tasks>
+-						</configuration>
+-						<goals>
+-							<goal>run</goal>
+-						</goals>
+-					</execution>
+-				</executions>
+-			</plugin>
+-			<plugin>
+ 				<groupId>org.eclipse.tycho</groupId>
+ 				<artifactId>tycho-surefire-plugin</artifactId>
+ 				<version>${tycho-version}</version>
+--- org.eclipse.mylyn.docs/org.eclipse.mylyn.wikitext.sdk-feature/feature.xml.bak	2012-07-02 09:22:29.000000000 +0200
++++ org.eclipse.mylyn.docs/org.eclipse.mylyn.wikitext.sdk-feature/feature.xml	2012-07-05 14:53:54.647273864 +0200
+@@ -47,13 +47,6 @@
+          unpack="false"/>
+ 
+    <plugin
+-         id="org.eclipse.mylyn.wikitext.tests"
+-         download-size="0"
+-         install-size="0"
+-         version="0.0.0"
+-         unpack="false"/>
+-
+-   <plugin
+          id="org.eclipse.mylyn.wikitext.confluence.core.source"
+          download-size="0"
+          install-size="0"
+--- org.eclipse.mylyn.docs/org.eclipse.mylyn.wikitext.sdk-feature/feature.xml.bak	2012-07-05 14:55:38.000000000 +0200
++++ org.eclipse.mylyn.docs/org.eclipse.mylyn.wikitext.sdk-feature/feature.xml	2012-07-05 15:03:22.909602628 +0200
+@@ -88,12 +88,6 @@
+          version="0.0.0"
+          unpack="false"/>
+ 
+-   <plugin
+-         id="org.eclipse.mylyn.wikitext.tests.source"
+-         download-size="0"
+-         install-size="0"
+-         version="0.0.0"
+-         unpack="false"/>
+ 
+    <plugin
+          id="org.eclipse.mylyn.wikitext.textile.core.source"
