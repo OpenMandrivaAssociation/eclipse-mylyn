@@ -2,22 +2,3 @@ sources:
   eclipse-mylyn-e93a849274d90e71a08afedc1d65c63053aaeb6c-incubator-fetched-src.tar.xz: 0df308701835ee58a5b4715a1f49b63211b6513c
   eclipse-mylyn-R_3_10_0-fetched-src.tar.xz: 27da478b35b9201aef5b9006b6085e2a2d51dfe4
   org.eclipse.core.runtime.compatibility.auth.tar.xz: 10cbc8bd55758b9a2dfd14051c65e6c792d03b67
-  eclipse-mylyn-3.10.0-1.0-omv2014.0.noarch.rpm: 519db17369056d7e075530301abc1c3d4befd77f
-  eclipse-mylyn-builds-3.10.0-1.0-omv2014.0.noarch.rpm: b77a3fc6d4abb67fc9a7febb9bcc1b52ba4c989e
-  eclipse-mylyn-builds-hudson-3.10.0-1.0-omv2014.0.noarch.rpm: 3b1740f75792356a06e9a27f8fb646a385d5c8ce
-  eclipse-mylyn-context-cdt-3.10.0-1.0-omv2014.0.noarch.rpm: aeed09c2206e2ddf54377347defa7555ef133b3f
-  eclipse-mylyn-context-java-3.10.0-1.0-omv2014.0.noarch.rpm: 0a2009d86041c71dabe31f78f22ed32dccae7f75
-  eclipse-mylyn-context-pde-3.10.0-1.0-omv2014.0.noarch.rpm: d29fb61a8e4af79b036f53b0b174d0e045781022
-  eclipse-mylyn-context-team-3.10.0-1.0-omv2014.0.noarch.rpm: ca3a2f3ef7f523a54a94f9504794b72fe6dcce6f
-  eclipse-mylyn-docs-epub-3.10.0-1.0-omv2014.0.noarch.rpm: f51a06b0b21dd3d7520115651e6950e9239bb2ca
-  eclipse-mylyn-docs-htmltext-3.10.0-1.0-omv2014.0.noarch.rpm: ea3cd1bb3d8fcf96fc7625578a80a8a8fee96bab
-  eclipse-mylyn-docs-wikitext-3.10.0-1.0-omv2014.0.noarch.rpm: 9cfdc21a9b127799418c5143f9e695e20b972724
-  eclipse-mylyn-ide-3.10.0-1.0-omv2014.0.noarch.rpm: 0953c72dceeedc56dae1b65fe970bbd71f935408
-  eclipse-mylyn-sdk-3.10.0-1.0-omv2014.0.noarch.rpm: 2ae340e07d6556ad105ba08b4f62f3ca2df73f62
-  eclipse-mylyn-tasks-bugzilla-3.10.0-1.0-omv2014.0.noarch.rpm: 53fce8643dbb2205ad7442f118a2cde929afbeab
-  eclipse-mylyn-tasks-trac-3.10.0-1.0-omv2014.0.noarch.rpm: 6395a1c23281a5078e095edbba2ea1776f608ee5
-  eclipse-mylyn-tasks-web-3.10.0-1.0-omv2014.0.noarch.rpm: 9c5e36e1d0d0730cb39b7e8859e6a2bdaaef6cf5
-  eclipse-mylyn-versions-3.10.0-1.0-omv2014.0.noarch.rpm: e35880a6661064424aa9f4810a988444fb42f9be
-  eclipse-mylyn-versions-cvs-3.10.0-1.0-omv2014.0.noarch.rpm: 6f57e1f936ebd616f2467693cf6df58184b62ff7
-  eclipse-mylyn-versions-git-3.10.0-1.0-omv2014.0.noarch.rpm: c2bf22b81f6a862e8b4ae60d45a3c02b4f7450e2
-  eclipse-mylyn-versions-subclipse-3.10.0-1.0-omv2014.0.noarch.rpm: 01260b3407c336ad2371ea83dd5868c0ff0c49df
