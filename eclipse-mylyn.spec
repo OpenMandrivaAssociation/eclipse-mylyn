@@ -10,7 +10,7 @@
 %{?scl:%global _non_scl_javadir /usr/share/java}
 
 Name:    %{?scl_prefix}eclipse-mylyn
-Summary: Eclipse Mylyn main feature.
+Summary: Eclipse Mylyn main feature
 Version: 3.10.0
 Release: 1.1%{?dist}
 License: EPL
