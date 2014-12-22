@@ -2,7 +2,7 @@
 
 set -e
 
-RELEASE_TAG="e93a849274d90e71a08afedc1d65c63053aaeb6c"
+RELEASE_TAG="af9c0aaf3a4e28ced4a09e0a5e09d80dd5933a4b"
 FETCHED_SOURCES_NAME="eclipse-mylyn-${RELEASE_TAG}-incubator-fetched-src"
 
 #clean up old runs

@@ -1,27 +1,23 @@
 %{?_javapackages_macros:%_javapackages_macros}
-%{?scl:%scl_package eclipse-mylyn}
-%{!?scl:%global pkg_name %{name}}
+%global pkg_name %{name}
 
 %global install_loc         %{_datadir}/eclipse/dropins
-%global tag R_3_10_0 
-%global incubator_tag 	e93a849274d90e71a08afedc1d65c63053aaeb6c
+%global tag R_3_13_0
+%global incubator_tag af9c0aaf3a4e28ced4a09e0a5e09d80dd5933a4b
 
-%{!?scl:%global _non_scl_javadir %{_javadir}}
-%{?scl:%global _non_scl_javadir /usr/share/java}
+%global _non_scl_javadir %{_javadir}
 
-Name:    %{?scl_prefix}eclipse-mylyn
+Name:    eclipse-mylyn
 Summary: Eclipse Mylyn main feature
-Version: 3.10.0
-Release: 1.1%{?dist}
+Version: 3.13.0
+Release: 2.1
 License: EPL
+Group:	Development/Java
 URL: http://www.eclipse.org/mylyn
 
 # bash fetch-eclipse-mylyn.sh
 Source0: %{pkg_name}-%{tag}-fetched-src.tar.xz
 Source1: fetch-eclipse-mylyn.sh
-Source2: org.eclipse.core.runtime.compatibility.auth.tar.xz
-Source3: fetch-compatibility.sh
-Source4: eclipse-mylyn-compatibility-pom.xml
 Source6: redhat-bugzilla-custom-transitions.txt
 
 Source7: eclipse-mylyn-%{incubator_tag}-incubator-fetched-src.tar.xz
@@ -33,43 +29,38 @@ Patch2: %{pkg_name}-ensure-sites-build-after-changes.patch
 Patch3: %{pkg_name}-disable-online-tests.patch
 
 Patch4: %{pkg_name}-merge-incubator.patch
-Patch5: %{pkg_name}-remove-javax-activation.patch
-Patch6: %{pkg_name}-bug-419133.patch
-Patch7: %{pkg_name}-build-compat.patch
+Patch5: %{pkg_name}-bug-419133.patch
+Patch6: lucene4.patch
+Patch7: %{pkg_name}-remove-epubcheck-tests.patch
+Patch8: %{pkg_name}-remove-nullable-annotation.patch
 
 BuildArch: noarch
 
-BuildRequires: java-devel >= 1.7.0
-BuildRequires: jpackage-utils >= 1.7.5-18.1
 BuildRequires: eclipse-platform >= 1:4.2.0
-BuildRequires: eclipse-pde >= 1:4.2.0-0.6
-BuildRequires: eclipse-rcp >= 1:4.2.0-0.6
+BuildRequires: eclipse-pde >= 1:4.2.0
 BuildRequires: eclipse-cdt
 BuildRequires: eclipse-egit
 BuildRequires: eclipse-jgit
 BuildRequires: eclipse-subclipse
+BuildRequires: eclipse-license
+BuildRequires: eclipse-emf
 BuildRequires: tycho >= 0.14.1-5
-BuildRequires: eclipse-egit
 BuildRequires: jacoco
-BuildRequires: lucene
+BuildRequires: lucene 
+BuildRequires: lucene-queryparser
 BuildRequires: maven-local
 
-BuildRequires: axis >= 1.4
 BuildRequires: apache-commons-lang >= 2.6-6
 BuildRequires: apache-commons-logging
 BuildRequires: apache-commons-io >= 2.3
 BuildRequires: ws-commons-util >= 1.0.1-21
 BuildRequires: xmlrpc-client >= 3.1.3
 BuildRequires: xmlrpc-common >= 3.1.3
-BuildRequires: jdom >= 1.1.2-3
+BuildRequires: xmlrpc-server >= 3.1.3
 BuildRequires: rome >= 0.9-9
-BuildRequires: jakarta-commons-httpclient
 BuildRequires: httpcomponents-client >= 4.1.3-2
 BuildRequires: httpcomponents-core >= 4.1.4
-BuildRequires: apache-commons-discovery >= 0.5-2
-#BuildRequires: jacoco-maven-plugin
 BuildRequires: google-gson >= 2.0.0
-BuildRequires: javamail >= 1.4.3-11
 BuildRequires: guava
 BuildRequires: xalan-j2
 BuildRequires: junit
@@ -79,34 +70,25 @@ BuildRequires: mockito
 BuildRequires: maven-install-plugin
 BuildRequires: maven-deploy-plugin
 BuildRequires: maven-plugin-build-helper
+BuildRequires: tika
+BuildRequires: tika-parsers
 
 Requires: eclipse-platform >= 1:4.2.0
-Requires: eclipse-rcp >= 1:4.2.0-0.6
 Requires: apache-commons-lang >= 2.6-6
 Requires: apache-commons-logging
 Requires: apache-commons-io >= 2.3
 Requires: ws-commons-util >= 1.0.1-21
 Requires: xmlrpc-client  >= 3.1.3
 Requires: xmlrpc-common  >= 3.1.3
-Requires: jpackage-utils
+Requires: xmlrpc-server  >= 3.1.3
 Requires: rome >= 0.9-9
 Requires: xml-commons-apis
 Requires: httpcomponents-client >= 4.1.3-2
 Requires: httpcomponents-core >= 4.1.4
-Requires: jakarta-commons-httpclient
-Requires: apache-commons-discovery >= 0.5-2
 Requires: jdom >= 1.1.2-3
-Requires: javamail >= 1.4.3-11
+Requires: guava
 Requires: lucene
 %{?scl:Requires: %scl_runtime}
-
-Provides: %{name}-commons = %{version}-%{release}
-Obsoletes: %{name}-commons < %{version}-%{release}
-Provides: %{name}-context = %{version}-%{release}
-Obsoletes: %{name}-context < %{version}-%{release}
-
-
-
 
 %description
 Mylyn integrates task support into Eclipse. It supports offline editing
@@ -116,10 +98,7 @@ information that is not relevant to the current task.
 %package context-java
 Summary:  Mylyn Bridge:  Java Development
 Requires: %{?scl_prefix}eclipse-jdt
-Requires: %{name}-context = %{version}-%{release}
-Provides: %{name}-java = %{version}-%{release}
-%{!?scl:Obsoletes: eclipse-context-java < %{version}-%{release}}
-
+Requires: %{name} = %{version}-%{release}
 
 %description context-java
 Mylyn Task-Focused UI extensions for JDT.  Provides focusing of Java
@@ -128,33 +107,23 @@ element views and editors.
 %package context-pde
 Summary:  Mylyn Bridge:  Plug-in Development
 Requires: %{?scl_prefix}eclipse-pde
-Requires: %{name}-java = %{version}-%{release}
-Provides: %{name}-pde = %{version}-%{release}
-%{!?scl:Obsoletes: eclipse-context-pde < %{version}-%{release}}
-
+Requires: %{name}-context-java = %{version}-%{release}
 
 %description context-pde
 Mylyn Task-Focused UI extensions for PDE, Ant, Team Support and CVS.
 
 %package context-cdt
 Summary:  Mylyn Bridge:  C/C++ Development
-Requires: %{name}-context = %{version}-%{release}
+Requires: %{name} = %{version}-%{release}
 Requires: %{?scl_prefix}eclipse-cdt
-
-%{!?scl:Provides: eclipse-cdt-mylyn = 2:1.0.0-1.fc12}
-Provides: %{name}-cdt = %{version}-%{release}
-%{!?scl:Obsoletes: eclipse-context-cdt < %{version}-%{release}}
-%{!?scl:Obsoletes: eclipse-cdt-mylyn < 2:1.0.0}
 
 %description context-cdt
 Mylyn Task-Focused UI extensions for CDT.  Provides focusing of C/C++
 element views and editors.
 
-
 %package context-team
 Summary:  Mylyn Context Connector: Team Support
-Requires: %{name}-context = %{version}-%{release}
-
+Requires: %{name} = %{version}-%{release}
 
 %description context-team
 Mylyn Task-Focused UI extensions for Team version control.
@@ -162,7 +131,6 @@ Mylyn Task-Focused UI extensions for Team version control.
 %package ide
 Summary: Mylyn Context Connector: Eclipse IDE
 Requires: %{name} = %{version}-%{release}
-Requires: %{name}-context = %{version}-%{release}
 Requires: %{name}-context-team = %{version}-%{release}
 
 %description ide
@@ -173,31 +141,24 @@ Provides focusing of common IDE views and editors.
 Summary: Mylyn Tasks Connector: Bugzilla
 Requires: %{?scl_prefix}eclipse-platform >= 1:4.2.0
 Requires: %{name} = %{version}-%{release}
-Provides: %{name}-bugzilla = %{version}-%{release}
-
 
 %description tasks-bugzilla
 Provides Task List integration, offline support and rich editing for the
 open source Bugzilla bug tracker.
 
-
 %package docs-wikitext
 Summary: Mylyn WikiText
 Requires: %{?scl_prefix}eclipse-platform >= 1:3.8.0
 Requires: %{name} = %{version}-%{release}
-Requires: %{name}-context = %{version}-%{release}
 Requires: jsoup
 Provides: %{name}-wikitext = %{version}-%{release}
-
 
 %description docs-wikitext
 Enables parsing and display of lightweight markup (wiki text).
 
-
 %package docs-htmltext
 Summary: Mylyn HtmlText
 Requires: %{?scl_prefix}eclipse-platform >= 1:3.8.0
-
 
 %description docs-htmltext
 Enables editing of HTML text.
@@ -205,7 +166,6 @@ Enables editing of HTML text.
 %package docs-epub
 Summary: Mylyn EPub
 Requires: %{?scl_prefix}eclipse-platform >= 1:3.8.0
-
 
 %description docs-epub
 The EPUB framework in Mylyn Docs offers API to create, manipulate,
@@ -215,10 +175,7 @@ read and write EPUB formatted files.
 Summary: Mylyn Tasks Connector: Trac
 Requires: %{?scl_prefix}eclipse-platform >= 1:4.2.0
 Requires: %{name} = %{version}-%{release}
-Requires: %{name}-context = %{version}-%{release}
 Requires: google-gson
-
-Provides: %{name}-trac = %{version}-%{release}
 
 %description tasks-trac
 Provides Task List integration, offline support and rich editing
@@ -231,28 +188,22 @@ Requires: %{name} = %{version}-%{release}
 Requires: rome >= 0.9-9
 Requires: jdom >= 1.1.2-3
 
-Provides: %{name}-webtasks = %{version}-%{release}
-
 %description tasks-web
 Provides Task List integration for web-based issue trackers
 and templates for example projects.
 
-
 %package versions
 Summary: Eclipse Mylyn Versions
-Requires:      %{name} = %{version}-%{release}
-
+Requires: %{name} = %{version}-%{release}
 
 %description versions
 Provides a framework for accessing team providers for Eclipse Mylyn.
-
 
 %package versions-git
 Summary: Mylyn Versions Connector: Git
 Requires: %{?scl_prefix}eclipse-platform >= 1:3.8.0
 Requires: %{?scl_prefix}eclipse-egit >= 0.10.1
 Requires: %{name}-versions = %{version}-%{release}
-
 
 %description versions-git
 Provides Git integration for Eclipse Mylyn.
@@ -262,24 +213,21 @@ Summary: Mylyn Versions Connector: CVS
 Requires: %{?scl_prefix}eclipse-platform >= 1:3.8.0
 Requires: %{name}-versions = %{version}-%{release}
 
-
 %description versions-cvs
 Provides CVS integration for Eclipse Mylyn.
 
 %package versions-subclipse
-Summary: Mylyn Versions Connector: CVS
+Summary: Mylyn Versions Connector: SVN
 Requires: %{?scl_prefix}eclipse-platform >= 1:3.8.0
 Requires: %{name}-versions = %{version}-%{release}
 Requires: %{?scl_prefix}eclipse-subclipse
 
-
 %description versions-subclipse
-Provides CVS integration for Eclipse Mylyn.
+Provides SVN integration for Eclipse Mylyn.
 
 %package builds
 Summary: Eclipse Mylyn Builds
 Requires: %{name} = %{version}-%{release}
-Requires: %{name}-context = %{version}-%{release}
 Requires: %{?scl_prefix}eclipse-emf
 Requires: %{name}-versions = %{version}-%{release}
 Requires: xml-commons-apis
@@ -290,12 +238,10 @@ build providers using Eclipse Mylyn.
 
 %package builds-hudson
 Summary: Mylyn Builds Connector: Hudson/Jenkins
-Requires: java >= 1:1.7.0
 Requires: %{?scl_prefix}eclipse-platform >= 1:4.2.0-0.6
 Requires: %{name} = %{version}-%{release}
 Requires: google-gson >= 1.6.0
 Requires: %{name}-builds = %{version}-%{release}
-
 
 %description builds-hudson
 Support for the open source Hudson and Jenkins continuous integration servers.
@@ -303,7 +249,6 @@ Support for the open source Hudson and Jenkins continuous integration servers.
 %package sdk
 Summary: Mylyn SDK
 Requires: %{name} = %{version}-%{release}
-Requires: %{name}-context = %{version}-%{release}
 Requires: %{name}-context-java = %{version}-%{release}
 Requires: %{name}-context-pde = %{version}-%{release}
 Requires: %{name}-context-cdt = %{version}-%{release}
@@ -319,32 +264,37 @@ Requires: %{name}-versions-cvs = %{version}-%{release}
 Requires: %{name}-versions-subclipse = %{version}-%{release}
 Requires: %{name}-builds = %{version}-%{release}
 Requires: %{name}-builds-hudson = %{version}-%{release}
-Requires: guava
 Requires: xalan-j2
 Requires: hamcrest
 Requires: objenesis
 Requires: junit
 Requires: mockito
 
-
 %description sdk
 Sources for all Mylyn bundles
 
+%package tests
+Summary: Mylyn test bundles
+Requires: %{?scl_prefix}eclipse-tests
+Requires: %{?scl_prefix}eclipse-swtbot
+%description tests
+All the test bundles for mylyn packages.
 
 %prep
 %setup -q -n eclipse-mylyn-%{tag}-fetched-src
-tar xaf %{SOURCE2} -C org.eclipse.mylyn.commons
-cp %{SOURCE4} org.eclipse.mylyn.commons/org.eclipse.core.runtime.compatibility.auth/pom.xml
-tar xaf %{SOURCE7} -C org.eclipse.mylyn.tasks --strip-components=1
+tar xf %{SOURCE7} -C org.eclipse.mylyn.tasks --strip-components=1
 
 %patch0
 %patch1
-%patch2
-%patch3
-%patch4
+%patch2 -p0 -b .sav
+%patch3 -p0 -b .sav
+%patch4 -p0 -b .sav
 %patch5
-%patch6
-%patch7
+pushd org.eclipse.mylyn.tasks
+%patch6 -p1 -b .sav
+popd
+%patch7 -p1
+%patch8
 
 #Disable plugins we can live without and for some reason are redundant (unpackaged or causing build failures).
 #There must be empty line after each %%pom_* macro invocation.
@@ -357,13 +307,31 @@ grep -l -r --include="pom.xml" maven-pmd-plugin . | ( while read pom_path; do %p
 
 %pom_disable_module org.eclipse.mylyn.commons.tck-feature org.eclipse.mylyn.commons 
 
-%pom_disable_module org.eclipse.mylyn.tests org.eclipse.mylyn .
+%pom_disable_module org.eclipse.mylyn.tests org.eclipse.mylyn
 
-%pom_disable_module org.eclipse.mylyn.test-feature org.eclipse.mylyn.tasks .
+%pom_disable_module org.eclipse.mylyn.test-feature org.eclipse.mylyn.tasks
+
+#Don't build artifacts that we don't ship
+%pom_disable_module org.eclipse.mylyn.wikitext-standalone org.eclipse.mylyn.docs
+%pom_disable_module org.eclipse.mylyn.wikitext.core.maven org.eclipse.mylyn.docs
 
 #Disable all tests (except one that was easier to build than patch dependent bundles.
 # grep -v org.eclipse.mylyn.doc
-grep -l -r --include="pom.xml" "tests" . | ( while read pom_path; do echo `%pom_xpath_remove "*[local-name() = 'module' and contains(text(),'tests') and not(contains(text(),'tests.'))]" $pom_path` ; done ) ;
+#grep -l -r --include="pom.xml" "tests" . | ( while read pom_path; do echo `%pom_xpath_remove "*[local-name() = 'module' and contains(text(),'tests') and not(contains(text(),'tests.'))]" $pom_path` ; done ) ;
+# Disable tests for which the required bundles are not included in the update site
+%pom_disable_module org.eclipse.mylyn.wikitext.creole.tests org.eclipse.mylyn.docs
+%pom_disable_module org.eclipse.mylyn.tasks.activity.tests org.eclipse.mylyn.tasks
+%pom_disable_module org.eclipse.mylyn.bugzilla.rest.tests org.eclipse.mylyn.tasks/connector-bugzilla-rest
+%pom_disable_module org.eclipse.mylyn.bugzilla.rest.core.tests org.eclipse.mylyn.tasks/connector-bugzilla-rest
+%pom_disable_module org.eclipse.mylyn.bugzilla.rest.ui.tests org.eclipse.mylyn.tasks/connector-bugzilla-rest
+
+#Correct hamcrest and mockito names
+sed -i -e "s/org.hamcrest;/org.hamcrest.core;/g" `find . -name MANIFEST.MF`
+sed -i -e "s/org.mockito;/org.mockito.mockito-core;/g"  `find . -name MANIFEST.MF`
+sed -i -e "s/org.eclipse.core.runtime.compatibility.auth/org.eclipse.core.runtime.compatibility/g"  `find . -name MANIFEST.MF`
+sed -i -e "s/org.apache.ant.source;/org.apache.ant;/g"  `find . -name MANIFEST.MF`
+sed -i -e "s/org.apache.xmlrpc/org.apache.xmlrpc,org.apache.xmlrpc.common,org.apache.xmlrpc.server/g" org.eclipse.mylyn.commons/org.eclipse.mylyn.commons.tests/META-INF/MANIFEST.MF
+sed -i -e "s/org.apache.xmlrpc;bundle-version=\"3.0.0\"/org.apache.xmlrpc,org.apache.xmlrpc.common/g" org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac.tests/META-INF/MANIFEST.MF
 
 #Remove all architectures that do not match current build architecture.
 %pom_xpath_remove "*[local-name() = 'environment' and 
@@ -371,13 +339,18 @@ grep -l -r --include="pom.xml" "tests" . | ( while read pom_path; do echo `%pom_
             or child::*[local-name() = 'ws' and not(text() = 'gtk')] 
             or child::*[local-name() = 'arch' and not(text() = '%{_arch}')]) ]" org.eclipse.mylyn/org.eclipse.mylyn-parent/pom.xml
 
-%pom_remove_plugin :tycho-packaging-plugin org.eclipse.mylyn/org.eclipse.mylyn-parent
+#Use default buildtimestamp source
+%pom_remove_dep :tycho-buildtimestamp-jgit org.eclipse.mylyn/org.eclipse.mylyn-parent
+%pom_remove_dep :tycho-sourceref-jgit org.eclipse.mylyn/org.eclipse.mylyn-parent
+sed -i -e "/<sourceReferences>/,+3d" org.eclipse.mylyn/org.eclipse.mylyn-parent/pom.xml
+
 %pom_remove_plugin :jacoco-maven-plugin org.eclipse.mylyn/org.eclipse.mylyn.maven-parent/pom.xml
 %pom_remove_plugin :jacoco-maven-plugin org.eclipse.mylyn/org.eclipse.mylyn-parent/pom.xml
-%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:3.10.0-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac.wiki/pom.xml
-%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:3.10.0-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac.wiki-feature/pom.xml
-%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:3.10.0-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.web.tasks/pom.xml
-%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:3.10.0-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.web.tasks-feature/pom.xml
+%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:%{version}-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac.wiki/pom.xml
+%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:%{version}-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac.wiki-feature/pom.xml
+%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:%{version}-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.web.tasks/pom.xml
+%pom_set_parent org.eclipse.mylyn.tasks:org.eclipse.mylyn.tasks-parent:%{version}-SNAPSHOT org.eclipse.mylyn.tasks/org.eclipse.mylyn.web.tasks-feature/pom.xml
+sed -i -e "s|3.11.0-SNAPSHOT|3.12.0-SNAPSHOT|g" org.eclipse.mylyn.docs/pom.xml
 
 rm org.eclipse.mylyn.builds/org.eclipse.mylyn.hudson.ui/src/org/eclipse/mylyn/internal/hudson/ui/HudsonStartup.java
 
@@ -385,14 +358,18 @@ rm org.eclipse.mylyn.builds/org.eclipse.mylyn.hudson.ui/src/org/eclipse/mylyn/in
 sed -i -e "s/compatible/greaterOrEqual/g" org.eclipse.mylyn.versions/org.eclipse.mylyn.versions.sdk-feature/feature.xml
 sed -i -e "s/e3.5/e3.6/g" org.eclipse.mylyn.commons/org.eclipse.mylyn.commons-target/pom.xml
 
+#Set source level to 1.8 for bundles which require it
+sed -i -e "s/JavaSE-1.6/JavaSE-1.8/g" org.eclipse.mylyn.tasks/org.eclipse.mylyn.tasks.core/META-INF/MANIFEST.MF
+sed -i -e "s/JavaSE-1.6/JavaSE-1.8/g" org.eclipse.mylyn.tasks/org.eclipse.mylyn.tasks.ui/META-INF/MANIFEST.MF
+
+#Disable pack-and-sign/build.xml
+%pom_remove_plugin org.apache.maven.plugins:maven-antrun-plugin org.eclipse.mylyn/org.eclipse.mylyn-site
+
 %build
-%{?scl:%scl_maven_opts}
 export MAVEN_OPTS="-XX:CompileCommand=exclude,org/eclipse/tycho/core/osgitools/EquinoxResolver,newState ${MAVEN_OPTS}"
-mvn-rpmbuild clean install -Dmaven.test.skip=true
+xmvn -o clean verify -Ddist.qualifier="'v'yyyyMMdd-HHmm" -Dmaven.test.skip=true
 
 %install
-install -d %{buildroot}%{install_loc}/mylyn
-install -d %{buildroot}%{install_loc}/mylyn/eclipse
 install -d %{buildroot}%{install_loc}/mylyn/eclipse/plugins
 install -d %{buildroot}%{install_loc}/mylyn/eclipse/features
 
@@ -401,40 +378,22 @@ cp  org.eclipse.mylyn/org.eclipse.mylyn-site/target/site/plugins/*.jar %{buildro
 pushd %{buildroot}%{install_loc}/mylyn/eclipse/plugins/
 
 	rm com.google.gson_*.jar
-	ln -s %{_non_scl_javadir}/google-gson.jar
+	ln -s %{_non_scl_javadir}/google-gson/gson.jar
 
 	rm com.sun.syndication_*.jar
 	ln -s %{_non_scl_javadir}/rome*.jar
 
-	rm com.sun.mail.javax.mail_*.jar
-	ln -s %{_non_scl_javadir}/javamail/mail.jar
-
-	rm javax.wsdl_*.jar
-	ln -s %{_non_scl_javadir}/wsdl4j.jar
-
 	rm javax.xml_*.jar
 	ln -s %{_non_scl_javadir}/jaxp.jar
 
-	rm javax.xml.rpc_*.jar
- 	ln -s %{_non_scl_javadir}/axis/jaxrpc.jar
-
-	rm javax.xml.soap_*.jar
-	ln -s %{_non_scl_javadir}/axis/saaj.jar
-
 	rm org.apache.xerces_*.jar
 	ln -s %{_non_scl_javadir}/xerces-j2.jar
-
-	rm org.apache.axis_*.jar
-	ln -s %{_non_scl_javadir}/axis/axis.jar
 
 	rm org.apache.xml.resolver_*.jar
 	ln -s %{_non_scl_javadir}/xml-commons-resolver.jar
 
 	rm org.apache.xml.serializer*.jar
 	ln -s %{_non_scl_javadir}/xalan-j2-serializer.jar
-
-	rm org.apache.commons.discovery_*.jar
-	ln -s %{_non_scl_javadir}/apache-commons-discovery.jar
 
 	rm org.apache.commons.io_*.jar
 	ln -s %{_non_scl_javadir}/apache-commons-io.jar
@@ -451,15 +410,22 @@ pushd %{buildroot}%{install_loc}/mylyn/eclipse/plugins/
 	rm org.apache.xmlrpc_*.jar
 	ln -s %{_non_scl_javadir}/xmlrpc-client.jar
 	ln -s %{_non_scl_javadir}/xmlrpc-common.jar
+	ln -s %{_non_scl_javadir}/xmlrpc-server.jar
 
 	rm org.jdom_*.jar
 	ln -s %{_non_scl_javadir}/jdom.jar
 
 	rm org.jsoup_*.jar
-	ln -s %{_non_scl_javadir}/jsoup.jar
+	ln -s %{_non_scl_javadir}/jsoup/jsoup.jar
 
 	rm com.google.guava_*.jar
 	ln -s %{_non_scl_javadir}/guava.jar
+
+    rm org.apache.tika.core_*.jar
+	ln -s %{_non_scl_javadir}/tika/tika-core.jar
+
+    rm org.apache.tika.parsers_*.jar
+	ln -s %{_non_scl_javadir}/tika/tika-parsers.jar
 
 	rm org.apache.lucene.core_*.jar #bundled by platform
 	rm org.apache.httpcomponents.httpclient_*.jar #bundled by platform
@@ -475,6 +441,19 @@ done
 
 install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-custom-transitions.txt
 
+# Collect and install test jars
+mkdir -p %{buildroot}%{_javadir}/mylyn-tests/plugins 
+set +e
+for pom in `find . -name pom.xml`; do
+ grep -q '<packaging>eclipse-test-plugin</packaging>' ${pom}
+ if [ $? -eq 0 ]; then
+   ls ${pom/pom.xml/}'target/'
+   testjar=`ls ${pom/pom.xml/}'target/'*.jar | grep -v sources`
+   mv ${testjar} %{buildroot}%{_javadir}/mylyn-tests/plugins
+ fi
+done
+set -e
+
 %files
 %dir %{install_loc}/mylyn
 %dir %{install_loc}/mylyn/eclipse
@@ -489,12 +468,8 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.tasks.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.tasks.bugs_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.help.ui_*.jar
-%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.oslc.core_*.jar
-%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.oslc.ui_*.jar
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons_*
-%{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons.soap_feature_*
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons.activity_*
-%{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons.compatibility_*
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons.identity_*
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons.notifications_*
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.commons.repositories_*
@@ -518,10 +493,8 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.monitor.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.monitor.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.commons.sdk.util_*.jar
-%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.commons.soap_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.commons.xmlrpc_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.commons.net_*.jar
-%{install_loc}/mylyn/eclipse/plugins/org.eclipse.core.runtime.compatibility.auth_*.jar
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.context_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.context.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.context.ui_*.jar
@@ -533,19 +506,12 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/rome*.jar
 %{install_loc}/mylyn/eclipse/plugins/xmlrpc-client.jar
 %{install_loc}/mylyn/eclipse/plugins/xmlrpc-common.jar
+%{install_loc}/mylyn/eclipse/plugins/xmlrpc-server.jar
 %{install_loc}/mylyn/eclipse/plugins/commons-httpclient.jar
-%{install_loc}/mylyn/eclipse/plugins/apache-commons-discovery.jar
 %{install_loc}/mylyn/eclipse/plugins/ws-commons-util.jar
 %{install_loc}/mylyn/eclipse/plugins/jaxp.jar
-%{install_loc}/mylyn/eclipse/plugins/google-gson.jar
-%{install_loc}/mylyn/eclipse/plugins/axis.jar
-%{install_loc}/mylyn/eclipse/plugins/jaxrpc.jar
-%{install_loc}/mylyn/eclipse/plugins/saaj.jar
-%{install_loc}/mylyn/eclipse/plugins/mail.jar
+%{install_loc}/mylyn/eclipse/plugins/gson.jar
 %{install_loc}/mylyn/eclipse/plugins/guava.jar
-%{install_loc}/mylyn/eclipse/plugins/wsdl4j.jar
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn-feature/epl-v10.html
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn-feature/license.html
 
 %files context-java
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.java_feature_*
@@ -554,42 +520,30 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.ide.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.ide.ant_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.debug.ui_*.jar
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.java-feature/epl-v10.html
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.java-feature/license.html
 
 %files context-pde
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.pde_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.pde.ui_*.jar
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.pde-feature/epl-v10.html
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.pde-feature/license.html
 
 %files context-cdt
 %{install_loc}/mylyn/eclipse/features/org.eclipse.cdt.mylyn_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.cdt.mylyn.ui_*.jar
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.cdt-feature/epl-v10.html
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.cdt-feature/license.html
 
 %files context-team
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.team_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.team.ui_*.jar
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.team-feature/epl-v10.html
-%doc org.eclipse.mylyn.context/org.eclipse.mylyn.team-feature/license.html
 
 %files ide
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.ide_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.team.cvs_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.bugzilla.ide_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.ide.ui_*.jar
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.tasks.ide-feature/epl-v10.html
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.tasks.ide-feature/license.html
 
 %files tasks-bugzilla
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.bugzilla_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.bugzilla.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.bugzilla.ui_*.jar
 %{install_loc}/mylyn/eclipse/redhat-bugzilla-custom-transitions.txt
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.bugzilla-feature/epl-v10.html
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.bugzilla-feature/license.html
 
 %files tasks-trac
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.trac_feature_*
@@ -597,41 +551,38 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.trac.ui_*.jar
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.trac.wiki_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.trac.wiki_*.jar
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac-feature/epl-v10.html
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.trac-feature/license.html
 
 %files tasks-web
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.web.tasks_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.web.tasks_*.jar
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.web.tasks-feature/epl-v10.html
-%doc org.eclipse.mylyn.tasks/org.eclipse.mylyn.web.tasks-feature/license.html
 
 %files docs-wikitext
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.wikitext_feature_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.core_*.jar
+%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.core.ant_*.jar
+%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.core.osgi_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.textile.core_*.jar
+%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.html.core_*.jar
+%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.mediawiki.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.mediawiki.core_*.jar
+%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.markdown.core_*.jar
+%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.markdown.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.confluence.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.tracwiki.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.twiki.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.help.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.textile.ui_*.jar
-%{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.mediawiki.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.confluence.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.tracwiki.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.twiki.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.tasks.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.wikitext.context.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/jsoup.jar
-%doc org.eclipse.mylyn.docs/org.eclipse.mylyn.wikitext-feature/epl-v10.html
-%doc org.eclipse.mylyn.docs/org.eclipse.mylyn.wikitext-feature/license.html
 
 %files docs-htmltext
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.htmltext_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.htmltext.ui_*.jar
-%doc org.eclipse.mylyn.docs/org.eclipse.mylyn.htmltext-feature/epl-v10.html
-%doc org.eclipse.mylyn.docs/org.eclipse.mylyn.htmltext-feature/license.html
 
 %files docs-epub
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.docs.epub_*
@@ -639,49 +590,36 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.docs.epub.help_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.docs.epub.ui_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.docs.epub.ant.core_*.jar
-%doc org.eclipse.mylyn.docs/org.eclipse.mylyn.docs.epub-feature/epl-v10.html
-%doc org.eclipse.mylyn.docs/org.eclipse.mylyn.docs.epub-feature/license.html
+%{install_loc}/mylyn/eclipse/plugins/tika*.jar
 
 %files versions
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.versions_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.versions.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.versions.ui_*.jar
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.versions-feature/epl-v10.html
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.versions-feature/license.html
 
 %files versions-git
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.git_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.git.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.git.ui_*.jar
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.git-feature/epl-v10.html
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.git-feature/license.html
 
 %files versions-cvs
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.cvs_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.cvs.core_*.jar
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.cvs-feature/epl-v10.html
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.cvs-feature/license.html
 
 %files versions-subclipse
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.subclipse_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.subclipse.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.subclipse.ui_*.jar
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.subclipse-feature/epl-v10.html
-%doc org.eclipse.mylyn.versions/org.eclipse.mylyn.subclipse-feature/license.html
 
 %files builds
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.builds_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.builds.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.builds.ui_*.jar
-%doc org.eclipse.mylyn.builds/org.eclipse.mylyn.builds-feature/epl-v10.html
-%doc org.eclipse.mylyn.builds/org.eclipse.mylyn.builds-feature/license.html
 
 %files builds-hudson
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.hudson_*
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.hudson.core_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.hudson.ui_*.jar
-%doc org.eclipse.mylyn.builds/org.eclipse.mylyn.hudson-feature/epl-v10.html
-%doc org.eclipse.mylyn.builds/org.eclipse.mylyn.hudson-feature/license.html
 
 %files sdk
 %{install_loc}/mylyn/eclipse/features/org.eclipse.mylyn.builds.sdk_*
@@ -698,14 +636,69 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.tests.util_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.mylyn.*.source_*.jar
 %{install_loc}/mylyn/eclipse/plugins/org.eclipse.cdt.mylyn.ui.source_*.jar
-%{install_loc}/mylyn/eclipse/plugins/guava.jar
 %{install_loc}/mylyn/eclipse/plugins/xerces-j2.jar
 %{install_loc}/mylyn/eclipse/plugins/xalan-j2-serializer.jar
 %{install_loc}/mylyn/eclipse/plugins/xml-commons-resolver.jar
-%doc org.eclipse.mylyn.commons/org.eclipse.mylyn.commons.sdk-feature/epl-v10.html
-%doc org.eclipse.mylyn.commons/org.eclipse.mylyn.commons.sdk-feature/license.html
+
+%files tests
+%{_javadir}/mylyn-tests
 
 %changelog
+* Thu Nov 13 2014 Alexander Kurtakov <akurtako@redhat.com> 3.13.0-2
+- Update lucene4 patch to work properly.
+
+* Thu Oct 02 2014 Mat Booth <mat.booth@redhat.com> - 3.13.0-1
+- Update to 3.13.0 release
+
+* Wed Sep 24 2014 Roland Grunberg <rgrunber@redhat.com> - 3.12.0-4
+- Disable pack-and-sign/build.xml.
+
+* Fri Aug 15 2014 Mat Booth <mat.booth@redhat.com> - 3.12.0-3
+- Ensure the qualifier buildtimestamp is lexigraphically greater than upstream's
+- Fix guava being owned by more than one package
+- Fix broken symlinks for gson and jsoup
+
+* Tue Jul 22 2014 Sami Wagiaalla <swagiaal@redhat.com> - 3.12.0-2
+- Rebuild for new eclipse-pde.
+
+* Thu Jul 10 2014 Sami Wagiaalla <swagiaal@redhat.com> - 3.12.0-1
+- Add missing Rs to mylyn-tests
+
+* Thu Jul 10 2014 Sami Wagiaalla <swagiaal@redhat.com> - 3.12.0-0.7
+- Update to R_3_12_0 tag.
+- Add mylyn-tests package.
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.12.0-0.6.git20140509
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Thu May 29 2014 Alexander Kurtakov <akurtako@redhat.com> 3.12.0-0.5.git20140509
+- Fix broken requires.
+
+* Wed May 28 2014 Alexander Kurtakov <akurtako@redhat.com> 3.12.0-0.4.git20140509
+- Drop old requires.
+
+* Wed May 28 2014 Alexander Kurtakov <akurtako@redhat.com> 3.12.0-0.3.git20140509
+- Drop old Provides/Requires.
+
+* Sat May 10 2014 Alexander Kurtakov <akurtako@redhat.com> 3.12.0-0.2.git20140509
+- Drop useless BR on javamail.
+
+* Sat May 10 2014 Alexander Kurtakov <akurtako@redhat.com> 3.12.0-0.1.git20140509
+- First 3.12.0 pre-release
+
+* Mon Mar 31 2014 Alexander Kurtakov <akurtako@redhat.com> 3.11.0-1
+- Update to upstream 3.11.0 release.
+
+* Tue Mar 11 2014 Alexander Kurtakov <akurtako@redhat.com> 3.10.0-4
+- Bump release for rebuild.
+- Make the lucene range include 4.x.
+
+* Fri Feb 28 2014 Roland Grunberg <rgrunber@redhat.com> - 3.10.0-3
+- Change R:java to R:java-headless (Bug 1068050).
+
+* Fri Feb 28 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.10.0-2
+- Fix usage of %%pom_disable_module macro
+
 * Tue Nov 12 2013 Alexander Kurtakov <akurtako@redhat.com> 3.10.0-1
 - Update to 3.10.
 - Drop compat sources and patches as no longer needed.
@@ -814,274 +807,3 @@ install %{SOURCE6} %{buildroot}%{install_loc}/mylyn/eclipse/redhat-bugzilla-cust
 
 * Mon Mar 26 2012 Krzysztof Daniel <kdaniel@redhat.com> 3.7.0-1
 - Update to upstream 3.7.0 release
-
-* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.6.4-4
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
-
-* Fri Dec 2 2011 Sami Wagiaalla <swagiaal@redhat.com> 3.6.4-2
-- Set noarch conditionally. 
-
-* Tue Nov 29 2011 Sami Wagiaalla <swagiaal@redhat.com> 3.6.4-2
-- Add ExclusiveArch: %%{ix86} x86_64 for RHEL.
-
-* Mon Nov 28 2011 Andrew Robinson <arobinso@redhat.com> 3.6.4-1
-- Update to upstream 3.6.4 release.
-
-* Mon Oct 31 2011 Andrew Robinson <arobinso@redhat.com> 3.6.3-1
-- Update to upstream 3.6.3 release.
-
-* Fri Oct 7 2011 Alexander Kurtakov <akurtako@redhat.com> 3.6.2-1
-- Update to upstream 3.6.2 release.
-
-* Thu Jul 14 2011 Severin Gehwolf <sgehwolf@redhat.com> 3.6.0-3
-- Mylyn requires Eclipse 3.5 and up. Changed R/BRs
-  accordingly.
-
-* Thu Jul 14 2011 Severin Gehwolf <sgehwolf@redhat.com> 3.6.0-2
-- Fix qualifier to match upstream.
-
-* Wed Jul 13 2011 Severin Gehwolf <sgehwolf@redhat.com> 3.6.0-1
-- Update to upstream's 3.6.0 release.
-
-* Tue Apr 26 2011 Severin Gehwolf <sgehwolf@redhat.com> 3.5.1-1
-- Update to upstream 3.5.1.
-
-* Fri Apr 8 2011 Severin Gehwolf <sgehwolf@redhat.com> 3.5.0-1
-- Update to upstream 3.5.0 release. This update splits this
-  existing SRPM up into about 7 additional ones.
-- Now requires new package eclipse-mylyn-commons.
-
-* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.4.2-5
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
-
-* Wed Jan 5 2011 Alexander Kurtakov <akurtako@redhat.com> 3.4.2-4
-- Fix symlink to non-existing versioned jar.
-
-* Tue Dec 7 2010 Severin Gehwolf <sgehwolf@redhat.com> 3.4.2-3
-- Really fix FTBFS.
-
-* Tue Dec 7 2010 Severin Gehwolf <sgehwolf@redhat.com> 3.4.2-2
-- Fix FTBFS RH Bz #660784
-
-* Fri Oct 8 2010 Chris Aniszczyk <zx@redhat.com> 3.4.2-1
-- Update to 3.4.2.
-
-* Wed Sep 1 2010 Jeff Johnston <jjohnstn@redhat.com> 3.4.1-3
-- Resolves: #605285
-- Fix obsoletes/provides for eclipse-cdt-mylyn using an epoch of 2.
-
-* Wed Sep 1 2010 Alexander Kurtakov <akurtako@redhat.com> 3.4.1-2
-- Backport patch for wikitext to work with Fedora wiki.
-
-* Tue Aug 31 2010 Alexander Kurtakov <akurtako@redhat.com> 3.4.1-1
-- Update to 3.4.1.
-
-* Tue Jul 27 2010 Charley Wang <chwang@redhat.com> 3.4.0-4
-- Add Wikitext SDK to eclipse-mylyn
-
-* Wed Jul 21 2010 Charley Wang <chwang@redhat.com> 3.4.0-3
-- Relax cdt requires, remove extraneous links, fix xmlrpc split
-
-* Thu Jul 15 2010 Charley Wang <chwang@redhat.com> 3.4.0-2
-- Add required jar links to mylyn dropins directory
-
-* Wed Jul 14 2010 Charley Wang <chwang@redhat.com> 3.4.0-1
-- Update to 3.4.0. Add mylyn-commons feature, remove commons.soap
-
-* Wed Mar 3 2010 Alexander Kurtakov <akurtako@redhat.com> 3.3.2-4
-- Relax bundle version requires for commons-lang.
-
-* Thu Feb 25 2010 Alexander Kurtakov <akurtako@redhat.com> 3.3.2-3
-- Really update to 3.3.2.
-
-* Thu Feb 25 2010 Alexander Kurtakov <akurtako@redhat.com> 3.3.2-2
-- Bump release.
-
-* Thu Feb 25 2010 Alexander Kurtakov <akurtako@redhat.com> 3.3.2-1
-- Update to 3.3.2.
-
-* Wed Feb 17 2010 Alexander Kurtakov <akurtako@redhat.com> 3.3.1-5
-- Adapt to commons-lang 2.4.
-
-* Wed Feb 17 2010 Alexander Kurtakov <akurtako@redhat.com> 3.3.1-4
-- Fix FTBFS rhbz#564704.
-
-* Thu Jan 07 2010 Andrew Overholt <overholt@redhat.com> 3.3.1-3
-- Remove Fedora customizations (adding bugzilla instances).
-
-* Thu Jan 07 2010 Andrew Overholt <overholt@redhat.com> 3.3.1-2
-- Update license field to add ASL 2.0 for wikitext.
-
-* Thu Dec 17 2009 Alexander Kurtakov <akurtako@redhat.com> 3.3.1-1
-- Update to 3.3.1 version.
-
-* Sun Nov 22 2009 Alexander Kurtakov <akurtako@redhat.com> 3.3.0-4
-- Fix build with newer common-codec.
-
-* Wed Oct 28 2009 Alexander Kurtakov <akurtako@redhat.com> 3.3.0-3
-- CDT subpackage obsoletes eclipse-cdt-mylyn.
-
-* Tue Oct 27 2009 Alexander Kurtakov <akurtako@redhat.com> 3.3.0-2
-- Fix cdt description. Bump qualifier to be newer than Galileo update site.
-
-* Tue Oct 27 2009 Alexander Kurtakov <akurtako@redhat.com> 3.3.0-1
-- Update to 3.3.0.
-- Add cdt bridge.
-- Remove BR/R which are required by eclipse itself now.
-
-* Tue Sep 22 2009 Alexander Kurtakov <akurtako@redhat.com> 3.2.1-2
-- Add patch for correct building of o.e.wikitext.help.ui.
-
-* Tue Aug 4 2009 Alexander Kurtakov <akurtako@redhat.com> 3.2.1-1
-- Update to 3.2.1.
-
-* Wed Apr 22 2009 Andrew Overholt <overholt@redhat.com> 3.1.1-1
-- 3.1.1
-- Bug fixes from 3.1.0:  http://tinyurl.com/mylyn-3-1-1bugs
-- Remove wikitext build patch that has been merged upstream.
-
-* Wed Mar 25 2009 Alexander Kurtakov <akurtako@redhat.com> 3.1.0-3
-- Fix documentation build.
-
-* Mon Mar 23 2009 Alexander Kurtakov <akurtako@redhat.com> 3.1.0-2
-- Rebuild to not ship p2 context.xml.
-
-* Tue Mar 17 2009 Andrew Overholt <overholt@redhat.com> 3.1.0-1
-- 3.1.0
-- Add wikitext sub-package.
-- Update to new Fedora customizations plugin.
-- Don't repack JARs as it breaks help content.
-
-* Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.3-5
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
-
-* Mon Feb 9 2009 Andrew Overholt <overholt@redhat.com> 3.0.4-1
-- 3.0.4
-
-* Wed Nov 12 2008 Andrew Overholt <overholt@redhat.com> 3.0.3-4
-- Add patch for e.o#239435 (rhbz#470356).
-
-* Fri Oct 31 2008 Alexander Kurtakov <akurtako@redhat.com> 3.0.3-3
-- Don't apply nojaxb.patch.
-- Fix eclipse-mylyn-splitxmlrpc.patch to Import-Package:org.apache.xmlrpc.
-
-* Tue Oct 21 2008 Alexander Kurtakov <akurtako@redhat.com> 3.0.3-2
-- BR ws-jaxme.
-- Bump xmlrpc3 requires for proper OSGi metadata.
-- Fix trac feature.xml to not require different qualifier for the deps.
-
-* Tue Oct 21 2008 Alexander Kurtakov <akurtako@redhat.com> 3.0.3-1
-- 3.0.3.
-- Rebase addfedoracustomizations.patch.
-
-* Sat Oct 18 2008 Alexander Kurtakov <akurtako@redhat.com> 3.0.1-3
-- Add >= for jdom to ensure proper OSGi metadata
-
-* Mon Aug 11 2008 Andrew Overholt <overholt@redhat.com> 3.0.1-2
-- Add >= for requirements to ensure proper OSGi metadata
-
-* Fri Aug 08 2008 Andrew Overholt <overholt@redhat.com> 3.0.1-1
-- Fix fuzz on adding Fedora customizations patch
-- Add patch to make Red Hat bugzilla 3.0
-
-* Thu Aug 07 2008 Andrew Overholt <overholt@redhat.com> 3.0.1-1
-- Add webtasks sub-package
-
-* Tue Aug 05 2008 Andrew Overholt <overholt@redhat.com> 3.0.1-1
-- Update install locations
-- Add qualifier hack for now
-
-* Wed Jul 30 2008 Andrew Overholt <overholt@redhat.com> 3.0.1-1
-- 3.0.1
-- Add patch to not require jaxb (required by XML-RPC Orbit bundle)
-- Fold -ide and -bugzilla into main package
-- Add commented-out webtasks sub-package; to be enabled after rome
-  review is complete
-
-* Thu Jul 17 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.3.2-6
-- fix license tag
-
-* Wed May 14 2008 Andrew Overholt <overholt@redhat.com> 2.3.2-6
-- ".qualifier" -> actual release qualifier in build (due to upstream
-  build system change (e.o#108291, rh#446468).
-
-* Tue Apr 15 2008 Andrew Overholt <overholt@redhat.com> 2.3.2-5
-- Re-build to attempt to fix rhbz#442251 (broken cpio archive).
-
-* Tue Apr 15 2008 Jesse Keating <jkeating@redhat.com> - 2.3.2-4
-- Rebuild due to filesystem corruption
-
-* Mon Apr 07 2008 Andrew Overholt <overholt@redhat.com> 2.3.2-3
-- Fix commons-lang symlink.
-
-* Mon Apr 07 2008 Andrew Overholt <overholt@redhat.com> 2.3.2-2
-- Upload sources.
-
-* Fri Apr 04 2008 Andrew Overholt <overholt@redhat.com> 2.3.2-1
-- 2.3.2.
-- Add jakarta-commons-lang dependency.
-
-* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 2.1.0-2
-- Autorebuild for GCC 4.3
-
-* Wed Oct 24 2007 Andrew Overholt <overholt@redhat.com> 2.1.0-1
-- 2.1.0
-- Enable GNOME bugzilla by default
-
-* Tue Oct 02 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-10
-- Add %%post gcj blocks for sub-packages (thanks to David Walluck).
-- Rename fetching script (s/mylar/mylyn/).
-
-* Fri Sep 21 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-9
-- Really remove all mylar references in mylyn feature - courtesy
-  Mandriva package.
-
-* Wed Sep 19 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-8
-- Add patch and source to have common bugzilla servers by default.
-
-* Tue Sep 18 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-7
-- Fix filename of webcore jar.
-
-* Tue Sep 18 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-6
-- Re-add gcj support (accidentally removed the flag).
-
-* Fri Sep 07 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-5
-- Make web.core its own jar.
-- Unpack web.core so we can symlink to dependencies.
-- Symlink to dependencies of web.core.
-- Remove rome jar and exports from web.core.
-- BR/R all the versions of dependencies that have OSGi manifests.
-
-* Fri Aug 24 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-4
-- ExcludeArch ppc64 (no xmlrpc3 on ppc64 due to rh#239123).
-
-* Thu Aug 23 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-3
-- Add BR on eclipse-pde.
-
-* Thu Aug 23 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-2
-- Add BR and R on eclipse-cvs-client.
-
-* Thu Aug 23 2007 Andrew Overholt <overholt@redhat.com> 2.0.0-1
-- Re-name to eclipse-mylyn.
-
-* Fri Aug 10 2007 Ben Konrath <bkonrath@redhat.com> 2.0.0-1
-- 2.0.0
-- Add -java and -pde sub-packages.
-
-* Wed Apr 25 2007 Andrew Overholt <overholt@redhat.com> 2.0-0.1.M2a.1
-- 2.0M2a (a re-tag to fix some tagging issues).
-
-* Wed Apr 18 2007 Andrew Overholt <overholt@redhat.com> 1.0-4
-- Add workaround for missing method in GNU Classpath.
-
-* Thu Apr 12 2007 Andrew Overholt <overholt@redhat.com> 1.0-3
-- Add Obsoletes and Provides for eclipse-bugzilla on
-  eclipse-mylar-bugzilla (comments in bug #222677).  If someone notices
-  missing functionality to warrant removing the Provides, please file a
-  bug.
-
-* Tue Mar 20 2007 Andrew Overholt <overholt@redhat.com> 1.0-2
-- Use xmlrpc3 jars instead of xmlrpc
-
-* Fri Mar 16 2007 Andrew Overholt <overholt@redhat.com> 1.0-1
-- Initial build
