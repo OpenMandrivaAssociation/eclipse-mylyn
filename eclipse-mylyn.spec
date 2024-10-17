@@ -13,7 +13,7 @@ Version: 3.13.0
 Release: 2.3
 License: EPL
 Group:	Development/Java
-URL: http://www.eclipse.org/mylyn
+URL: https://www.eclipse.org/mylyn
 
 # bash fetch-eclipse-mylyn.sh
 Source0: %{pkg_name}-%{tag}-fetched-src.tar.xz
